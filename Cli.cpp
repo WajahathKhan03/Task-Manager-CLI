@@ -92,7 +92,44 @@ public:
 
     file.close();
 }
-
+//list all the tasks that are of same type 
+   void loadExTaskFromFile(string type){
+      ifstream file("tasks.txt");
+      if(!file){
+        std::cout<<"no tasks entered\n";
+        return;
+      }
+      string in;
+      while (getline(file, in)) {
+        vector<string> storedData;
+        string word = "";
+        // Split by '|'
+        for (char c : in) {
+            if (c == '|') {
+                storedData.push_back(word);
+                word = "";
+            } else {
+                word += c;
+            }
+        }
+        if(word!=""){
+        storedData.push_back(word); 
+        }
+        bool likeExist=false;
+            for(auto x:storedData){
+                if(x==type){
+                 likeExist=true;
+                }
+            }
+        if(likeExist){
+            for(auto x: storedData){
+                std::cout<<x<<"|";
+            }
+        }
+         std::cout<<"\n";
+    }
+    file.close();
+   }
 };
 
  
@@ -129,48 +166,68 @@ int stringToInt(string s) {
     return sign * num;
 }
 
-int main() {
+int main()
+{
     D myTask;
-   while(true){
-    vector<string> argv;
-    string input;
-    getline(cin, input);
+    while (true)
+    {
+        vector<string> argv;
+        string input;
+        getline(cin, input);
 
-    string word = "";
-    for (char c : input) {
-      if (c == ' ') {
-         if (!word.empty()) {
+        string word = "";
+        for (char c : input)
+        {
+            if (c == ' ')
+            {
+                if (!word.empty())
+                {
+                    argv.push_back(word);
+                    word = ""; // Reset word
+                }
+            }
+            else
+            {
+                word += c;
+            }
+        }
+        if (!word.empty())
+        { // Push last word
             argv.push_back(word);
-            word = ""; // Reset word
-         }
-    } else {
-        word += c;
+        }
+        if (argv[0] == "task")
+        {
+            if (argv[1] == "exit")
+            {
+                break;
+            }
+            else
+            {
+                if (argv[1] == "add")
+                {
+                    int id = stoi(argv[2]);
+                    std::cout << "adding task ...\n";
+                    myTask.addTask(id, argv[3], argv[4]);
+                }
+                else if (argv[1] == "update")
+                {
+                    myTask.updateTask(stringToInt(argv[2]), argv[3]);
+                }
+                else if (argv.size() == 3 && argv[1] == "list")
+                {
+                    if (argv[2] == "todo" || argv[2] == "pending" || argv[2] == "done")
+                    {
+                        myTask.loadExTaskFromFile(argv[2]);
+                    }
+                }
+                else if (argv.size() == 2 && argv[1] == "list")
+                {
+                    myTask.loadTasksFromFile();
+                }
+            }
+        }
     }
-    }
-    if (!word.empty()) { // Push last word
-    argv.push_back(word);
-    }
-    if(argv[0]=="task"){
-    if(argv[1]=="exit"){
-        break;
-     }
-    else{
-      if(argv[1]=="add"){
-        int id=stoi(argv[2]);
-        cout<<"adding task ...\n";
-        myTask.addTask(id,argv[3],argv[4]);
-      }
-      else if(argv[1]=="list"){
-        myTask.loadTasksFromFile();
-      }
-      else if(argv[1]=="update"){
-        myTask.updateTask(stringToInt(argv[2]),argv[3]);
-      }
-    }
-    }
-   }
     loadDataToFile(myTask);
-    cout<<"saved tasks\n";
+    std::cout << "saved tasks\n";
     return 0;
 }
-
